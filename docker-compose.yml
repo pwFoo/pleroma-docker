@@ -1,0 +1,39 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: ${DOCKER_NETWORK}
+
+services:
+  db:
+    image: postgres:10.3-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${DOCKER_DATADIR}/db:/var/lib/postgresql/data
+
+  server:
+    build:
+      context: .
+      dockerfile: ./pleroma.dockerfile
+    restart: unless-stopped
+    links:
+      - db
+    environment:
+      POSTGRES_IP: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PLEROMA_WORKSPACE: /pleroma
+      MIX_ARCHIVES: /mix/archives
+      MIX_HOME: /mix/home
+    volumes:
+      - ./pleroma:/pleroma
+      - ${DOCKER_DATADIR}/pleroma:/data
+      - ${DOCKER_DATADIR}/mix:/mix
+      - ${DOCKER_DATADIR}/misc/cache:/root/.cache
+      - ${DOCKER_DATADIR}/misc/meta:/meta
