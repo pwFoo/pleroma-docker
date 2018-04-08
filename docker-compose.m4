@@ -36,6 +36,8 @@ services:
     links:
       - db
     environment:
+      env_fb(`mix_env', `prod')
+
       env_fb(`postgres_ip', `db')
       env(`postgres_db')
       env(`postgres_user')
@@ -53,13 +55,11 @@ services:
       env(`pleroma_media_proxy_redirect_on_failure')
       env(`pleroma_media_proxy_url')
       env(`pleroma_db_pool_size')
-      env(`pleroma_uploads_path')
+      env_fb(`pleroma_uploads_path', `/uploads')
       env(`pleroma_chat_enabled')
-
-      env_fb(`mix_env', `prod')
     volumes:
       - ./custom.d:/custom.d
-      - env_inline(`docker_datadir')/uploads:env_inline(`pleroma_uploads_path')
+      - env_inline(`docker_datadir')/uploads:env_inline_fb(`pleroma_uploads_path', `/uploads')
     labels:
       traefik.enable: "true"
       traefik.fe.port: "4000"
