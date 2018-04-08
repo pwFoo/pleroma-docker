@@ -46,7 +46,7 @@ Here are a few customization examples:
     - Save it in `custom.d/priv/static/instance/thumbnail.jpeg`
 
 - I want to change the `config.json`.
-    - Just use [the template](https://git.pleroma.social/pleroma/pleroma/blob/develop/priv/static/static/config.json) and save it in `custom.d/priv/static/static/config.json`
+    - Just modify [the template](https://git.pleroma.social/pleroma/pleroma/blob/develop/priv/static/static/config.json) and save it in `custom.d/priv/static/static/config.json`
 
 - I want to change the background
     - Throw an image into `custom.d/priv/static/static` and then edit the config from above
