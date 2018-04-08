@@ -47,26 +47,42 @@ function run_dockerized {
     docker-compose down
 }
 
+function action__pre {
+    m4 docker-compose.m4 > docker-compose.yml
+}
+
+function action__post {
+    rm docker-compose.yml
+}
+
 function action__build {
+    action__pre
     run_dockerized "build"
     log_ok "Done"
+    action__post
 }
 
 function action__configure {
+    action__pre
     run_dockerized "configure"
     log_ok "Done"
+    action__post
 }
 
 function action__run {
+    action__pre
     log_info "Booting pleroma..."
     docker-compose up --remove-orphans -d
     log_ok "Done"
+    action__post
 }
 
 function action__stop {
+    action__pre
     log_info "Stopping pleroma..."
     docker-compose down
     log_ok "Done"
+    action__post
 }
 
 if [[ -z "$1" ]]; then
