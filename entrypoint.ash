@@ -32,7 +32,16 @@ if [[ -z "$PLEROMA_WORKSPACE" ]]; then
     echo "Please set the PLEROMA_WORKSPACE variable to your pleroma root."
     exit 1
 fi
+
 cd $PLEROMA_WORKSPACE
+if [[ ! -L config/prod.secret.exs ]]; then
+    rm -f config/prod.secret.exs
+    ln -s /docker-config.exs config/prod.secret.exs
+fi
+if [[ ! -L config/dev.secret.exs ]]; then
+    rm -f config/dev.secret.exs
+    ln -s /docker-config.exs config/dev.secret.exs
+fi
 
 case "$1" in
 build) action__build;;
