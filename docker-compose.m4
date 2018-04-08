@@ -1,7 +1,7 @@
 divert(-1)
 define(`upcase', `translit($1, `a-z', `A-Z')')
-define(`env', `upcase($1):${upcase($1):?upcase($1)}')
-define(`env_fb', `upcase($1):-$2')
+define(`env', `upcase($1): ${upcase($1):?upcase($1)}')
+define(`env_fb', `upcase($1): ${upcase($1):-$2}')
 define(`env_inline', `${upcase($1):?upcase($1)}')
 divert(1)dnl
 
@@ -31,7 +31,7 @@ services:
     links:
       - db
     environment:
-      env(`postgres_ip', `db')
+      env_fb(`postgres_ip', `db')
       env(`postgres_db')
       env(`postgres_user')
       env(`postgres_password')
@@ -47,6 +47,7 @@ services:
       env(`pleroma_media_proxy_enabled')
       env(`pleroma_media_proxy_redirect_on_failure')
       env(`pleroma_media_proxy_url')
+      env(`pleroma_db_pool_size')
 
       env_fb(`pleroma_workspace', `/pleroma')
       env_fb(`mix_archives', `/mix/archives')
