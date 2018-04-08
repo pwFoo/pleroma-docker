@@ -22,21 +22,27 @@ config :pleroma, Pleroma.Web.Endpoint,
     ],
     secret_key_base: Docker.env(:secret_key_base)
 
+config :pleroma, Pleroma.Upload,
+    uploads: Docker.env(:uploads_path)
+
+config :pleroma, :chat,
+    enabled: Docker.env(:chat_enabled)
+
 config :pleroma, :instance,
-  name: Docker.env(:name),
-  email: Docker.env(:admin_email),
-  limit: Docker.env(:user_limit),
-  registrations_open: Docker.env(:registrations_open)
+    name: Docker.env(:name),
+    email: Docker.env(:admin_email),
+    limit: Docker.env(:user_limit),
+    registrations_open: Docker.env(:registrations_open)
 
 config :pleroma, :media_proxy,
-  enabled: Docker.env(:media_proxy_enabled),
-  redirect_on_failure: Docker.env(:media_proxy_redirect_on_failure),
-  base_url: Docker.env(:media_proxy_url)
+    enabled: Docker.env(:media_proxy_enabled),
+    redirect_on_failure: Docker.env(:media_proxy_redirect_on_failure),
+    base_url: Docker.env(:media_proxy_url)
 
 config :pleroma, Pleroma.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: Docker.env(:postgres_user, true),
-  password: Docker.env(:postgres_password, true),
-  database: Docker.env(:postgres_db, true),
-  hostname: Docker.env(:postgres_ip, true),
-  pool_size: Docker.env(:db_pool_size)
+    adapter: Ecto.Adapters.Postgres,
+    username: Docker.env(:postgres_user, true),
+    password: Docker.env(:postgres_password, true),
+    database: Docker.env(:postgres_db, true),
+    hostname: Docker.env(:postgres_ip, true),
+    pool_size: Docker.env(:db_pool_size)

@@ -53,17 +53,20 @@ services:
       env(`pleroma_media_proxy_redirect_on_failure')
       env(`pleroma_media_proxy_url')
       env(`pleroma_db_pool_size')
+      env(`pleroma_uploads_path')
+      env(`pleroma_chat_enabled')
 
       env_fb(`mix_env', `prod')
     volumes:
       - ./custom.d:/custom.d
+      - env_inline(`docker_datadir')/uploads:env_inline(`pleroma_uploads_path')
     labels:
       traefik.enable: "true"
       traefik.fe.port: "4000"
       traefik.fe.protocol: "http"
       traefik.fe.entryPoints: "http,https"
       traefik.fe.frontend.rule: "Host:env_inline(`pleroma_url')"
-      traefik.cache.port: "80"
+      traefik.cache.port: "4000"
       traefik.cache.protocol: "http"
       traefik.cache.entryPoints: "http,https"
       traefik.cache.frontend.rule: "Host:env_inline(`pleroma_media_proxy_url')"

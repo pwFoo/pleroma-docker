@@ -58,7 +58,7 @@ Here are a few customization examples:
     - Save them in `custom.d/priv/static/emoji`. Then create and/or edit `custom.d/config/custom_emoji.txt`.
 
 - I want custom ToS
-    - Throw a HTML document to `priv/static/static/terms-of-service.html`
+    - Throw a HTML document to `custom.d/priv/static/static/terms-of-service.html`
 
 You get the gist.<br>
 Pretty basic stuff.
