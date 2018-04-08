@@ -31,7 +31,7 @@ config :pleroma, :chat,
 config :pleroma, :instance,
     name: Docker.env(:name),
     email: Docker.env(:admin_email),
-    limit: Docker.env(:user_limit),
+    limit: Docker.env(:max_toot_chars),
     registrations_open: Docker.env(:registrations_open)
 
 config :pleroma, :media_proxy,

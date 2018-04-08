@@ -49,7 +49,7 @@ services:
       env(`pleroma_secret_key_base')
       env(`pleroma_name')
       env(`pleroma_admin_email')
-      env(`pleroma_user_limit')
+      env(`pleroma_max_toot_chars')
       env(`pleroma_registrations_open')
       env(`pleroma_media_proxy_enabled')
       env(`pleroma_media_proxy_redirect_on_failure')
