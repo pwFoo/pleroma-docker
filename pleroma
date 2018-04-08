@@ -79,7 +79,7 @@ function prepare {
 
 function cleanup {
     log_info "Cleaning up"
-    rm docker-compose.yml
+    [[ -f docker-compose.yml ]] && rm docker-compose.yml
 }
 
 trap "cleanup" INT TERM EXIT
