@@ -3,6 +3,7 @@ define(`upcase', `translit($1, `a-z', `A-Z')')
 define(`env', `upcase($1): ${upcase($1):?upcase($1)}')
 define(`env_fb', `upcase($1): ${upcase($1):-$2}')
 define(`env_inline', `${upcase($1):?upcase($1)}')
+define(`env_inline_fb', `${upcase($1):-$2}')
 divert(1)dnl
 
 version: "3"
@@ -10,7 +11,7 @@ version: "3"
 networks:
   default:
     external:
-      name: env_inline(`docker_network')
+      name: env_inline_fb(`docker_network', `pleroma_docker_1')
 
 services:
   db:
@@ -22,11 +23,15 @@ services:
       env(`postgres_password')
     volumes:
       - env_inline(`docker_datadir')/db:/var/lib/postgresql/data
+      - ./initdb.sql:/docker-entrypoint-initdb.d/pleroma.sql
 
   server:
     build:
       context: .
       dockerfile: ./pleroma.dockerfile
+      args:
+        env(`pleroma_version')
+        env_fb(`mix_env', `prod')
     restart: unless-stopped
     links:
       - db
@@ -49,16 +54,9 @@ services:
       env(`pleroma_media_proxy_url')
       env(`pleroma_db_pool_size')
 
-      env_fb(`pleroma_workspace', `/pleroma')
-      env_fb(`mix_archives', `/mix/archives')
-      env_fb(`mix_home', `/mix/home')
       env_fb(`mix_env', `prod')
     volumes:
-      - ./pleroma:/pleroma
-      - env_inline(`docker_datadir')/pleroma:/data
-      - env_inline(`docker_datadir')/mix:/mix
-      - env_inline(`docker_datadir')/misc/cache:/root/.cache
-      - env_inline(`docker_datadir')/misc/meta:/meta
+      - ./custom.d:/custom.d
     labels:
       traefik.enable: "true"
       traefik.fe.port: "4000"

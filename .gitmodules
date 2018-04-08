@@ -1,6 +1,0 @@
-[submodule "pleroma"]
-	path = pleroma
-	url = git@git.pleroma.social:pleroma/pleroma.git
-[submodule "camo"]
-	path = camo
-	url = https://github.com/atmos/camo.git
