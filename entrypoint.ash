@@ -4,8 +4,10 @@ set -e
 
 function compile {
     # Make sure that the tooling is present
-    mix local.hex --force
-    mix local.rebar --force
+    if [[ ! -d /mix-archives/hex-* ]] || [[ ! -f /mix/rebar ]] || [[ ! -f /mix/rebar3 ]]; then
+        mix local.hex --force
+        mix local.rebar --force
+    fi
 
     # Recompile
     mix deps.get
@@ -14,9 +16,16 @@ function compile {
 
 # Execute onbuild actions if required
 if [[ "$1" == "onbuild" ]]; then
-    # On build we use the sources instead of the runtime
-    cd /pleroma
+    # Pretend we're in runtime mode
+    mv /pleroma /pleroma-runtime
+    cd /pleroma-runtime
+
+    # Build pleroma
     compile
+
+    # Put precompiled sources back
+    cd /
+    mv /pleroma-runtime /pleroma
     exit 0
 fi
 
