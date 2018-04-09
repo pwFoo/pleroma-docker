@@ -14,7 +14,7 @@ This repository is my attempt to dockerize it for easier deployment.
 
 ## Assumptions
 
-This repo assumes that you're using Træfik as your auto-configuring reverse proxy.
+This repo assumes that you're using [Træfik](https://traefik.io/) as your auto-configuring reverse proxy.
 
 ## Tutorial
 
