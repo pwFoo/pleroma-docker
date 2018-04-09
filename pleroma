@@ -34,20 +34,6 @@ Actions:
 "
 }
 
-function run_dockerized {
-    log_info "Stopping existing containers (if any)"
-    docker-compose down
-
-    log_info "Rebuilding images"
-    docker-compose build
-
-    log_info "Running action '$1'"
-    docker-compose run server $1
-
-    log_info "Cleaning up.."
-    docker-compose down
-}
-
 function action__start {
     log_info "Booting pleroma"
     docker-compose up --remove-orphans -d
@@ -65,7 +51,8 @@ function action__logs {
 }
 
 function action__build {
-    docker-compose build
+    docker-compose pull
+    docker-compose build --build-arg __BUST_CACHE="$(date)" server
 }
 
 function action__enter {

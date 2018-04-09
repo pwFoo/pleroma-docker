@@ -31,7 +31,6 @@ services:
       dockerfile: ./pleroma.dockerfile
       args:
         env(`pleroma_version')
-        env_fb(`mix_env', `prod')
     restart: unless-stopped
     links:
       - db
