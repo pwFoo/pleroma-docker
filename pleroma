@@ -96,7 +96,7 @@ case "$1" in
 build) action__build;;
 start) action__start;;
 stop) action__stop;;
-restart) action__start; action__stop; ;;
+restart) action__stop; action__start; ;;
 logs) action__logs;;
 enter) action__enter;;
 *)
