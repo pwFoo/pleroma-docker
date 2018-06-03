@@ -1,95 +1,85 @@
 #!/bin/bash
 
 set -e
+set -x
 
-function log_generic { # $1: color, $2: prefix, $3: message #
-    echo -e "[$(tput setaf $1)$(tput bold)$2$(tput sgr0)] $3"
-}
+flags=""
 
-function log_error { # $1: message #
-    log_generic 1 ERR "$1"
-}
-
-function log_ok { # $1: message #
-    log_generic 2 "OK " "$1"
-}
-
-function log_info { # $1: message #
-    log_generic 4 INF "$1"
-}
-
-function print_help {
+print_help() {
     echo "
 Pleroma Maintenance Script
 
 Usage:
-    $0 [action] [flags]
+    $0 [action]
 
 Actions:
-    start      Start pleroma and sibling services
-    stop       Stop pleroma and sibling services
-    restart    Executes #stop and #start respectively.
-    logs       Show the current container logs
-    enter       Enter the pleroma container for debugging/maintenance
+    build          Rebuild the pleroma container
+
+    purge          Remove the pleroma container and all build caches
+
+    start / up     Start pleroma and sibling services
+
+    stop / down    Stop pleroma and sibling services
+
+    restart        Executes #stop and #start respectively.
+
+    status / ps    Show the current container status
+
+    logs           Show the current container logs
+
+    enter          Enter the pleroma container for debugging/maintenance
 "
 }
 
-function action__start {
-    log_info "Booting pleroma"
-    docker-compose up --remove-orphans -d
-    log_ok "Done"
+render_template() {
+    m4 $flags docker-compose.m4 | awk 'NF'
 }
 
-function action__stop {
-    log_info "Stopping pleroma"
-    docker-compose down
-    log_ok "Done"
+docker_compose() {
+    render_template | docker-compose -f - "$@"
 }
 
-function action__logs {
-    docker-compose logs -f
+load_env() {
+    if [[ ! -f .env ]]; then
+        echo "Please create a .env file first"
+        echo "(Copy .env.dist to .env for a template)"
+        exit 1
+    fi
+
+    while read -r line; do
+        if [[ "$line" == \#* ]] || [[ -z "$line" ]]; then
+            continue;
+        fi
+
+        export "${line?}"
+        flags="-D__${line?} $flags"
+    done < .env
 }
 
-function action__build {
-    docker-compose pull
-    docker-compose build --build-arg __BUST_CACHE="$(date)" server
-}
-
-function action__enter {
-    docker-compose exec server ash
-}
-
-function prepare {
-    log_info "Preparing script"
-    m4 docker-compose.m4 > docker-compose.yml
-}
-
-function cleanup {
-    log_info "Cleaning up"
-    [[ -f docker-compose.yml ]] && rm docker-compose.yml
-}
-
-trap "cleanup" INT TERM EXIT
+action__start()   { docker_compose up --remove-orphans -d; }
+action__up()      { action__start; }
+action__stop()    { docker_compose down; }
+action__down()    { action__stop; }
+action__restart() { action__stop; action__start; }
+action__logs()    { docker_compose logs -f; }
+action__build()   { docker_compose build --build-arg __BUST_CACHE="$(date +%s)" server; }
+action__enter()   { docker_compose exec server ash; }
+action__status()  { docker_compose ps; }
+action__ps()      { action__status; }
+action__debug()   { render_template; }
+action__lint()    { render_template | jq; }
 
 if [[ -z "$1" ]]; then
-    log_error "No action provided."
     print_help
     exit 1
 fi
 
-prepare
+load_env
 
-case "$1" in
-build) action__build;;
-start) action__start;;
-stop) action__stop;;
-restart) action__stop; action__start; ;;
-logs) action__logs;;
-enter) action__enter;;
-*)
-    log_error "The action '$1' is invalid."
+actions=(build update purge start up stop down restart logs enter status ps debug lint)
+if [[ ${actions[*]} =~ ${1} ]]; then
+    "action__${1}"
+else
     print_help
     exit 1
-;;
-esac
-shift
+fi

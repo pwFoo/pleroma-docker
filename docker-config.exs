@@ -18,7 +18,7 @@ config :pleroma, Pleroma.Web.Endpoint,
     url: [
         host: Docker.env(:url),
         scheme: Docker.env(:scheme),
-        port: Docker.env(:port)
+        port: 4000
     ],
     secret_key_base: Docker.env(:secret_key_base)
 
@@ -31,7 +31,7 @@ config :pleroma, :chat,
 config :pleroma, :instance,
     name: Docker.env(:name),
     email: Docker.env(:admin_email),
-    limit: Docker.env(:max_toot_chars),
+    limit: Docker.env(:max_notice_chars),
     registrations_open: Docker.env(:registrations_open)
 
 config :pleroma, :media_proxy,
