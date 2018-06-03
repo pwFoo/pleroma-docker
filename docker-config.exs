@@ -18,7 +18,7 @@ config :pleroma, Pleroma.Web.Endpoint,
     url: [
         host: Docker.env(:url),
         scheme: Docker.env(:scheme),
-        port: 4000
+        port: Docker.env(:port)
     ],
     secret_key_base: Docker.env(:secret_key_base)
 

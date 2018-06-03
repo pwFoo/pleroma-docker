@@ -102,6 +102,7 @@ define(<env_inline_fb>, <${upcase($1):-$2}>)
 
         "env(<pleroma_url>)",
         "env(<pleroma_scheme>)",
+        "env(<pleroma_port>)",
         "env(<pleroma_secret_key_base>)",
         "env(<pleroma_name>)",
         "env(<pleroma_admin_email>)",
