@@ -119,7 +119,7 @@ define(<env_inline_fb>, <${upcase($1):-$2}>)
         "env_inline(<docker_datadir>)/uploads:env_inline_fb(<pleroma_uploads_path>, </uploads>)"
       ],
       "labels": [
-        ifelse(SCRIPT_USE_PROXY, traefik, <
+        ifelse(__SCRIPT_USE_PROXY, traefik, <
           "traefik.enable=true",
           "traefik.fe.port=4000",
           "traefik.fe.protocol=http",
