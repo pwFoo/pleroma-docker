@@ -9,11 +9,11 @@ define(<env_inline_fb>, <${upcase($1):-$2}>)
 {
   "version": "3",
 
-  ifdef(__DOCKER_NETWORK, <
+  ifdef(<__DOCKER_NETWORK>, <
     "networks": {
       "default": {
         "external": {
-          "name": "DOCKER_NETWORK"
+          "name": "__DOCKER_NETWORK"
         }
       }
     },
