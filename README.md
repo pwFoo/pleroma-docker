@@ -29,6 +29,7 @@ This repository dockerizes it for easier deployment.
 - 100% generic
 - Everything is customizable
 - Zero special host dependencies
+- Configuration is not compile-time
 - "It just works"
 
 ## Alternatives
@@ -76,6 +77,11 @@ a good experience for both you and your users. It thus supports multiple
 "operation modes" and quite some config variables which you can mix and match.
 
 This guide will explain some of the tricky `.env` file parts as detailed as possible (but you should still read the comments in there).
+
+Since this setup [injects code](https://glitch.sh/sn0w/pleroma-docker/blob/master/docker-config.exs) into pleroma that moves it's configuration into the environment (ref ["The Twelve-Factor App"](https://12factor.net/)),
+the built image is 100% reusable and can be shared/replicated across multiple hosts.
+To do that just run `./pleroma build` as usual and then tag your image to whatever you want.
+Just make sure to start the replicated container with `env_file:` or all required `-e` pairs.
 
 #### Storing Data
 
