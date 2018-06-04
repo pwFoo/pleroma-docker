@@ -132,7 +132,7 @@ custom.d/server.httpd -> /usr/local/apache2/conf/httpd.conf
 custom.d/vhost.httpd -> /usr/local/apache2/conf/extra/httpd-vhosts.conf
 ```
 
-To reach your pleroma container from inside apache use `ProxyPass [loc] http://localhost:4000/`.
+To reach your pleroma container from inside apache use `ProxyPass [loc] http://pleroma:4000/`.
 
 Again setting `SCRIPT_PORT_HTTP`, `SCRIPT_PORT_HTTPS` and `SCRIPT_BIND_IP` is required.
 
