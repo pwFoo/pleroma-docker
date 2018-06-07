@@ -14,6 +14,8 @@ defmodule Docker do
     end
 end
 
+config :logger, level: String.to_atom(Docker.env(:loglevel) || "info")
+
 config :pleroma, Pleroma.Web.Endpoint,
     url: [
         host: Docker.env(:url),
