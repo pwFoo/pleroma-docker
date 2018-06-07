@@ -1,25 +1,20 @@
 FROM elixir:1.6-alpine
 
-env MIX_HOME /mix
-env MIX_ARCHIVES /mix-archives
+ENV MIX_HOME /mix
+ENV MIX_ARCHIVES /mix-archives
 
 # Prepare system
 RUN apk add --no-cache --virtual .build alpine-sdk git rsync
-
-# Perform a clone that can be cached
-WORKDIR /pleroma
-RUN git clone --progress https://git.pleroma.social/pleroma/pleroma.git .
 
 # Bust the cache with a build arg
 # that is different on every build
 ARG __BUST_CACHE
 ENV __BUST_CACHE $__BUST_CACHE
 
-# Update pleroma
+# Get the sources
 ARG PLEROMA_VERSION
-RUN \
-    git checkout $PLEROMA_VERSION && \
-    git pull --rebase --autostash
+WORKDIR /pleroma
+RUN git clone --progress https://git.pleroma.social/pleroma/pleroma.git . && git checkout $PLEROMA_VERSION
 
 # Inject config
 ADD ./docker-config.exs /docker-config.exs
