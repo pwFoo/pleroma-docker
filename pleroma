@@ -14,8 +14,6 @@ Usage:
 Actions:
     build          Rebuild the pleroma container
 
-    purge          Remove the pleroma container and all build caches
-
     start / up     Start pleroma and sibling services
 
     stop / down    Stop pleroma and sibling services
