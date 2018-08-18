@@ -61,8 +61,8 @@ it to a tag or commit-hash pins the version.
 
 ## Maintaining Pleroma
 
-Pleroma maintenance is usually done with premade mix tasks.
-You can run these tasks using `./pleroma mix [task] [arguments...]`.
+Pleroma maintenance is usually done with premade mix tasks.<br>
+You can run these tasks using `./pleroma mix [task] [arguments...]`.<br>
 If you need to fix some bigger issues you can also spawn a shell using `./pleroma enter`.
 
 ## Customizing Pleroma
