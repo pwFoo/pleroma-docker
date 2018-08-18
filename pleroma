@@ -80,7 +80,7 @@ load_env() {
 action__build()   { docker_compose build --build-arg __BUST_CACHE="$(date +%s)" server; }
 action__debug()   { render_template; }
 action__down()    { action__stop; }
-action__enter()   { docker_compose exec server ash; }
+action__enter()   { docker_compose exec server ash -c 'cd /pleroma && ash'; }
 action__lint()    { render_template | jq; }
 action__logs()    { docker_compose logs -f; }
 action__mix()     { docker_compose exec server ash -c "cd /pleroma && mix $*"; }

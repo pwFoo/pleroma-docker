@@ -59,6 +59,12 @@ Every time you run `./pleroma build` the script will fetch all upstream changes 
 This means that setting `PLEROMA_VERSION` to a branch enables rolling-release updates while setting
 it to a tag or commit-hash pins the version.
 
+## Maintaining Pleroma
+
+Pleroma maintenance is usually done with premade mix tasks.
+You can run these tasks using `./pleroma mix [task] [arguments...]`.
+If you need to fix some bigger issues you can also spawn a shell using `./pleroma enter`.
+
 ## Customizing Pleroma
 
 Just add your customizations (and their folder structure) to `custom.d`.<br>
@@ -182,4 +188,4 @@ ssl_certificate     /ssl/ssl.crt;
 ssl_certificate_key /ssl/ssl.key;
 ```
 
-In traefik-mode and manual-mode these files and the `SCRIPT_LOCAL_SSL` value are ignored.
+In traefik-mode and manual-mode these files and the `SCRIPT_ENABLE_SSL` value are ignored.
