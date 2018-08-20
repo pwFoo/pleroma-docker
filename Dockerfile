@@ -1,16 +1,15 @@
-FROM elixir:1.7-slim
-
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8
-ENV MIX_ENV=prod
+FROM debian:9-slim
 
 VOLUME /custom.d
-
 EXPOSE 4000
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
 # Register pseudo-entrypoint
 ADD ./entrypoint.sh /
-RUN chmod +x /entrypoint.sh
+RUN chmod a+x /entrypoint.sh
 CMD ["/entrypoint.sh"]
 
 # Set "real" entrypoint to an init system.
@@ -20,32 +19,41 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 ENTRYPOINT ["/tini", "--"]
 
-# Get git
+# Get build dependencies
 RUN \
        apt-get update \
-    && apt-get install -y --no-install-recommends git ca-certificates \
+    && apt-get install -y --no-install-recommends git wget ca-certificates gnupg2 \
+    && wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb \
+    && dpkg -i erlang-solutions_1.0_all.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends esl-erlang elixir \
     && rm -rf /var/lib/apt/lists/*
 
-# Limit rights
+# Limit permissions
 ARG DOCKER_UID
 ARG DOCKER_GID
 ARG PLEROMA_UPLOADS_PATH
 
 RUN \
-       addgroup --gid ${DOCKER_GID} pleroma \
-    && adduser --system --home /pleroma --shell /bin/bash --ingroup pleroma --uid ${DOCKER_UID} pleroma \
-    && mkdir -p /pleroma /custom.d $PLEROMA_UPLOADS_PATH \
-    && touch /pleroma.md5 \
-    && chown -R pleroma:pleroma /pleroma /pleroma.md5 /custom.d $PLEROMA_UPLOADS_PATH
+       groupadd --gid ${DOCKER_GID} pleroma \
+    && useradd -m -s /bin/bash --gid ${DOCKER_GID} --uid ${DOCKER_UID} pleroma \
+    && mkdir -p /custom.d $PLEROMA_UPLOADS_PATH \
+    && chown -R pleroma:pleroma /custom.d $PLEROMA_UPLOADS_PATH
 
 USER pleroma
+WORKDIR /home/pleroma
 
-# Get the sources and rebar/hex
-ARG PLEROMA_VERSION
-WORKDIR /pleroma
+# Inject runtime config helper
+COPY --chown=pleroma:pleroma ./docker-config.exs /docker-config.exs
+
+# Get pleroma
+RUN git clone --progress https://git.pleroma.social/pleroma/pleroma.git ./pleroma
+
+WORKDIR /home/pleroma/pleroma
 
 RUN \
-       git clone --progress https://git.pleroma.social/pleroma/pleroma.git . \
+       ln -s /docker-config.exs config/prod.secret.exs \
+    && ln -s /docker-config.exs config/dev.secret.exs \
     && mix local.hex --force \
     && mix local.rebar --force
 
@@ -54,16 +62,20 @@ ARG __BUST_CACHE
 ENV __BUST_CACHE $__BUST_CACHE
 
 # Fetch changes, checkout
+ARG PLEROMA_VERSION
+
 RUN \
        git fetch --all \
     && git checkout $PLEROMA_VERSION \
     && git pull --rebase --autostash
 
-# Modify sources
-ADD ./docker-config.exs /docker-config.exs
+# Insert overrides
+COPY --chown=pleroma:pleroma ./custom.d /pleroma
 
+# Precompile
 RUN \
-    ln -s /docker-config.exs config/prod.secret.exs && \
-    ln -s /docker-config.exs config/dev.secret.exs
+       mix deps.get \
+    && mix compile
 
-ADD ./custom.d /pleroma
+# Disable dev-mode
+ENV MIX_ENV=prod

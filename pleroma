@@ -124,7 +124,7 @@ action__debug() {
 
     action__stop
 
-    docker_compose run --rm -u pleroma -w /pleroma $debug_mounts server bash -c 'mix deps.get && mix compile'
+    docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts server bash -c 'mix deps.get && mix compile'
 
     x_flags=""
     if [[ $NO_X_FORWARDING != 1 ]]; then
@@ -132,7 +132,7 @@ action__debug() {
     fi
 
     [[ $NO_X_FORWARDING == 1 ]] || xhost +local:root
-    docker_compose run --rm -u pleroma -w /pleroma $debug_mounts $x_flags server bash -c "cp -rf /custom.d/* /pleroma && $*"
+    docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts $x_flags server bash -c "cp -rf /custom.d/* /pleroma && $*"
     [[ $NO_X_FORWARDING == 1 ]] || xhost -local:root
 }
 
