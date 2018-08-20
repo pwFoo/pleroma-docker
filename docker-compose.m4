@@ -85,7 +85,10 @@ define(<env_inline_fb>, <${upcase($1):-$2}>)
       "build": {
         "context": ".",
         "args": [
-          "env(<pleroma_version>)"
+          "env(<pleroma_version>)",
+          "env(<docker_uid>)",
+          "env(<docker_gid>)",
+          "env_fb(<pleroma_uploads_path>, </uploads>)",
         ]
       },
       "restart": "unless-stopped",

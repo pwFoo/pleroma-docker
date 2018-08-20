@@ -68,13 +68,15 @@ If you need to fix some bigger issues you can also spawn a shell using `./plerom
 ## Customizing Pleroma
 
 Just add your customizations (and their folder structure) to `custom.d`.<br>
-They will be copied (*not* mounted) into the right place when the container starts.<br>
+They will be mounted and symlinked into the right place when the container starts.<br>
 You can even replace/patch pleroma's code with this, because the project is recompiled at startup.<br>
 
 In general: Prepending `custom.d/` to pleroma's customization guides should work all the time.<br>
 Check them out in the [official pleroma wiki](https://git.pleroma.social/pleroma/pleroma/wikis/home).
 
 For example: A custom thumbnail now goes into `custom.d/priv/static/instance/thumbnail.jpeg` instead of `priv/static/instance/thumbnail.jpeg`.
+
+Note: Since `custom.d` needs to be accessible at runtime by the pleroma process, the container will automatically chown these files to `$UID:$GID` from your `.env` file.
 
 ## Configuring Pleroma
 

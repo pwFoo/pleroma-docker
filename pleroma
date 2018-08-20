@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 
 print_help() {
     echo "
@@ -10,23 +11,36 @@ Usage:
     $0 [action]
 
 Actions:
-    build                     Rebuild the pleroma container
+    build                     Rebuild the pleroma container.
 
-    start / up                Start pleroma and sibling services
+    dump                      Dump the generated docker-compose.yml to stdout.
 
-    stop / down               Stop pleroma and sibling services
+    debug [bin] [args...]     Launches a new pleroma container but uses \$bin instead of phx.server as entrypoint.
+                              **Warning**: This is intended for debugging pleroma with tools like :debugger and :observer.
+                              It thus forwards your X-Server into docker and temporarily fiddles with your xhost
+                              access controls. If this is a security concern for you, please export NO_X_FORWARDING=1
+                              before launching a debugger session.
+
+    enter                     Spawn a shell inside the container for debugging/maintenance.
+                              This command does not link to the postgres container.
+                              If you need that use #debug instead.
+
+    logs                      Show the current container logs.
+
+    mix [task] [args...]      Run a mix task without entering the container.
+
+    mod [file]                Creates the file in custom.d and downloads the content from pleroma.social.
+                              The download respects your \$PLEROMA_VERSION from .env.
+
+    passthrough / p [...]     Pass any custom command to docker-compose.
 
     restart                   Executes #stop and #start respectively.
 
-    status / ps               Show the current container status
+    start / up                Start pleroma and sibling services.
 
-    logs                      Show the current container logs
+    stop / down               Stop pleroma and sibling services.
 
-    enter                     Enter the pleroma container for debugging/maintenance
-
-    mix [task] [args...]      Run a mix task without entering the container
-
-    dump                      Dump the generated docker-compose.yml to stdout
+    status / ps               Show the current container status.
 
 Environment:
     DEBUG can be used to modify the loglevel.
@@ -38,7 +52,7 @@ Environment:
         -e is always on unless you set it to +e.
 
         For setting long options with -o use a colon (:) instead of a space
-        to seperate the option from -o. For example: SHOPT='-x -e -o:pipefail'
+        to seperate the option from -o. For example: SHOPT='-x -e -o:pipefail'.
 
 Contributing:
     You can report bugs or contribute to this project at:
@@ -77,26 +91,55 @@ load_env() {
     done < .env
 }
 
-action__build()   { docker_compose build --build-arg __BUST_CACHE="$(date +%s)" server; }
-action__debug()   { render_template; }
-action__down()    { action__stop; }
-action__enter()   { docker_compose exec server ash -c 'cd /pleroma && ash'; }
-action__lint()    { render_template | jq; }
-action__logs()    { docker_compose logs -f; }
-action__mix()     { docker_compose exec server ash -c "cd /pleroma && mix $*"; }
-action__ps()      { action__status; }
-action__restart() { action__stop; action__start; }
-action__start()   { docker_compose up --remove-orphans -d; }
-action__status()  { docker_compose ps; }
-action__stop()    { docker_compose down; }
-action__up()      { action__start; }
+action__build()       { docker_compose build --build-arg __BUST_CACHE="$(date +%s)" server; }
+action__dump()        { cat <(render_template); }
+action__enter()       { docker_compose exec server ash -c 'cd /pleroma && ash'; }
+action__logs()        { docker_compose logs -f; }
+action__mix()         { docker_compose exec server ash -c "cd /pleroma && mix $*"; }
+action__passthrough() { docker_compose $*; }
+action__p()           { action__passthrough $*; }
 
-action__dump() {
-    if command -v jq 2>&1 1>/dev/null; then
-        cat <(render_template) | jq
-    else
-        cat <(render_template)
+action__restart()     { action__stop; action__start; }
+
+action__start()       { docker_compose up --remove-orphans -d; }
+action__up()          { action__start; }
+
+action__stop()        { docker_compose down; }
+action__down()        { action__stop; }
+
+action__status()      { docker_compose ps; }
+action__ps()          { action__status; }
+
+###
+# This function rips out the mix caches from the container
+# in order to speed up rebuilds during debugging/modding sessions.
+# To persist the changes, the user still needs to rebuild the container.
+###
+action__debug() {
+    debug_mounts="-v $(pwd)/custom.d:/custom.d -v $(pwd)/debug.d/build:/pleroma/_build -v $(pwd)/debug.d/deps:/pleroma/deps"
+
+    if [[ ! -d ./debug.d ]]; then
+        mkdir -p ./debug.d/{build,deps}
     fi
+
+    action__stop
+
+    docker_compose run --rm -u pleroma -w /pleroma $debug_mounts server bash -c 'mix deps.get && mix compile'
+
+    x_flags=""
+    if [[ $NO_X_FORWARDING != 1 ]]; then
+        x_flags="-e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/pleroma/.Xauthority"
+    fi
+
+    [[ $NO_X_FORWARDING == 1 ]] || xhost +local:root
+    docker_compose run --rm -u pleroma -w /pleroma $debug_mounts $x_flags server bash -c "cp -rf /custom.d/* /pleroma && $*"
+    [[ $NO_X_FORWARDING == 1 ]] || xhost -local:root
+}
+
+action__mod() {
+    echo "Preparing 'custom.d/$1' for modding..."
+    install -D <(echo '') ./custom.d/$1
+    wget -O ./custom.d/$1 https://git.pleroma.social/pleroma/pleroma/raw/$PLEROMA_VERSION/$1
 }
 
 # Check if there is any command at all
