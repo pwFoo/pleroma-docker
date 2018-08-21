@@ -43,18 +43,13 @@ RUN \
 USER pleroma
 WORKDIR /home/pleroma
 
-# Inject runtime config helper
-COPY --chown=pleroma:pleroma ./docker-config.exs /docker-config.exs
-
 # Get pleroma
 RUN git clone --progress https://git.pleroma.social/pleroma/pleroma.git ./pleroma
-
 WORKDIR /home/pleroma/pleroma
 
+# Get rebar/hex
 RUN \
-       ln -s /docker-config.exs config/prod.secret.exs \
-    && ln -s /docker-config.exs config/dev.secret.exs \
-    && mix local.hex --force \
+       mix local.hex --force \
     && mix local.rebar --force
 
 # Bust the build cache
@@ -69,13 +64,13 @@ RUN \
     && git checkout $PLEROMA_VERSION \
     && git pull --rebase --autostash
 
-# Insert overrides
-COPY --chown=pleroma:pleroma ./custom.d /pleroma
+# Insert overrides and config helper
+COPY --chown=pleroma:pleroma ./docker-config.exs /docker-config.exs
+COPY --chown=pleroma:pleroma ./custom.d /home/pleroma/pleroma
 
 # Precompile
 RUN \
-       mix deps.get \
+       ln -s /docker-config.exs config/prod.secret.exs \
+    && ln -s /docker-config.exs config/dev.secret.exs \
+    && mix deps.get \
     && mix compile
-
-# Disable dev-mode
-ENV MIX_ENV=prod

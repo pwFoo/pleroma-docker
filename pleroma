@@ -70,7 +70,6 @@ docker_compose() {
     docker-compose \
         -f <(render_template) \
         --project-directory . \
-        --project-name "${PLEROMA_NAME:-pleroma}" \
         "$@"
 }
 
@@ -116,7 +115,7 @@ action__ps()          { action__status; }
 # To persist the changes, the user still needs to rebuild the container.
 ###
 action__debug() {
-    debug_mounts="-v $(pwd)/custom.d:/custom.d -v $(pwd)/debug.d/build:/pleroma/_build -v $(pwd)/debug.d/deps:/pleroma/deps"
+    debug_mounts="-v $(pwd)/custom.d:/custom.d -v $(pwd)/debug.d/build:/home/pleroma/pleroma/_build -v $(pwd)/debug.d/deps:/home/pleroma/pleroma/deps"
 
     if [[ ! -d ./debug.d ]]; then
         mkdir -p ./debug.d/{build,deps}
@@ -124,15 +123,15 @@ action__debug() {
 
     action__stop
 
-    docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts server bash -c 'mix deps.get && mix compile'
+    docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts server bash -c 'cp -rvf /custom.d/* /home/pleroma/pleroma && mix deps.get'
 
     x_flags=""
     if [[ $NO_X_FORWARDING != 1 ]]; then
-        x_flags="-e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/pleroma/.Xauthority"
+        x_flags="-e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix"
     fi
 
     [[ $NO_X_FORWARDING == 1 ]] || xhost +local:root
-    docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts $x_flags server bash -c "cp -rf /custom.d/* /pleroma && $*"
+    docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts $x_flags server bash -c "cp -rvf /custom.d/* /home/pleroma/pleroma && $*"
     [[ $NO_X_FORWARDING == 1 ]] || xhost -local:root
 }
 

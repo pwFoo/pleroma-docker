@@ -129,11 +129,11 @@ define(<env_inline_fb>, <${upcase($1):-$2}>)
           "traefik.fe.port=4000",
           "traefik.fe.protocol=http",
           "traefik.fe.entryPoints=http,https",
-          "traefik.fe.frontend.rule=Host:env_inline(<pleroma_url>)",
+          "traefik.fe.frontend.rule=Host:patsubst(__PLEROMA_URL, <string:>, <>)",
           "traefik.cache.port=4000",
           "traefik.cache.protocol=http",
           "traefik.cache.entryPoints=http,https",
-          "traefik.cache.frontend.rule=Host:env_inline(<pleroma_media_proxy_url>)"
+          "traefik.cache.frontend.rule=Host:patsubst(patsubst(__PLEROMA_MEDIA_PROXY_URL, <http.*?//>, <>), <string:>, <>)"
         >)
       ]
     }

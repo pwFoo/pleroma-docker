@@ -1,16 +1,37 @@
 use Mix.Config
 
 defmodule Docker do
-    def env(name, verbatim \\ false) do
-        env_name = (if verbatim, do: "", else: "pleroma_") <> Atom.to_string(name) |> String.upcase
-        env_var = System.get_env(env_name)
+    def env(shortname, verbatim \\ false) do
+        # Get var
+        name = ((if verbatim, do: "", else: "pleroma_") <> Atom.to_string(shortname)) |> String.upcase()
+        raw_var = System.get_env(name)
 
-        if env_var == nil do
-            raise "Could not find #{env_name} in environment. Please define it and try again."
+        if raw_var == nil do
+            raise "Could not find #{name} in environment. Please define it and try again."
         end
 
-        System.put_env(env_name, "")
-        env_var
+        # Match type and cast if needed
+        if String.contains?(raw_var, ":") do
+            var_parts = String.split(raw_var, ":", parts: 2)
+
+            type = Enum.at(var_parts, 0)
+            var = Enum.at(var_parts, 1)
+
+            func = case type do
+                "int" -> fn(x) -> Integer.parse(x) |> elem(0) end
+                "bool" -> fn(x) -> x == "true" end
+                "string" -> fn(x) -> x end
+                _ -> if verbatim do
+                        fn(x) -> x end
+                     else
+                        raise "Unknown type #{type} used in variable #{raw_var}."
+                     end
+            end
+
+            func.(var)
+        else
+            raw_var
+        end
     end
 end
 
