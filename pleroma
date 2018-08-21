@@ -121,6 +121,10 @@ action__debug() {
         mkdir -p ./debug.d/{build,deps}
     fi
 
+    if [[ ! -d ./custom.d/lib ]]; then
+        mkdir -p ./custom.d/lib
+    fi
+
     action__stop
 
     docker_compose run --rm -u pleroma -w /home/pleroma/pleroma $debug_mounts server bash -c 'cp -rvf /custom.d/* /home/pleroma/pleroma && mix deps.get'
