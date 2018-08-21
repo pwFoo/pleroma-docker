@@ -115,7 +115,12 @@ action__ps()          { action__status; }
 # To persist the changes, the user still needs to rebuild the container.
 ###
 action__debug() {
-    debug_mounts="-v $(pwd)/custom.d:/custom.d -v $(pwd)/debug.d/build:/home/pleroma/pleroma/_build -v $(pwd)/debug.d/deps:/home/pleroma/pleroma/deps"
+    debug_mounts="\
+        -v $(pwd)/custom.d:/custom.d \
+        -v $(pwd)/debug.d/build:/home/pleroma/pleroma/_build \
+        -v $(pwd)/debug.d/deps:/home/pleroma/pleroma/deps \
+        -v $(pwd)/docker-config.exs:/docker-config.exs \
+    "
 
     if [[ ! -d ./debug.d ]]; then
         mkdir -p ./debug.d/{build,deps}
@@ -140,9 +145,41 @@ action__debug() {
 }
 
 action__mod() {
-    echo "Preparing 'custom.d/$1' for modding..."
-    install -D <(echo '') ./custom.d/$1
-    wget -O ./custom.d/$1 https://git.pleroma.social/pleroma/pleroma/raw/$PLEROMA_VERSION/$1
+    if [[ -z "$(command -v curl)" ]] || [[ -z "$(command -v jq)" ]] || [[ -z "$(command -v dialog)" ]]; then
+        echo "You need curl(1), jq(1), and dialog(1) in your PATH for this subcommand."
+        exit 1
+    fi
+
+    if [[ ! -d ./debug.d ]]; then
+        mkdir ./debug.d
+    fi
+
+    if [[ ! -f ./debug.d/mod_files.json ]] || [[ ! -z "$(find ./debug.d/mod_files.json -mmin +5)" ]]; then
+        curl -sSL -# "https://glitch.sh/mirror/pleroma/files/$PLEROMA_VERSION?format=json" > ./debug.d/mod_files.json
+
+        if [[ -f ./debug.d/mod_files.lst ]]; then
+            rm ./debug.d/mod_files.lst
+        fi
+        cat ./debug.d/mod_files.json | jq -r 'map("\(.)\n") | add' > ./debug.d/mod_files.lst
+    fi
+
+    if [[ -f ./debug.d/mod_files.lst ]] && [[ -r ./debug.d/mod_files.lst ]]; then
+        choices=""
+
+        while read -r candidate; do
+            choices="$choices $candidate $(echo $candidate | rev | cut -d/ -f1 | rev)"
+        done <<< $(cat ./debug.d/mod_files.lst | grep -E ".*$1.*")
+
+        res=$(mktemp)
+        dialog --menu "Select the file you want to modify:" 35 80 30 $choices 2>$res
+        choice=$(cat $res)
+
+        install -D <(echo '') ./custom.d/$choice
+        curl -sSL -# "https://git.pleroma.social/pleroma/pleroma/raw/$PLEROMA_VERSION/$choice" > "./custom.d/$choice"
+    else
+        install -D <(echo '') ./custom.d/$1
+        curl -sSL -# "https://git.pleroma.social/pleroma/pleroma/raw/$PLEROMA_VERSION/$1" > "./custom.d/$1"
+    fi
 }
 
 # Check if there is any command at all
