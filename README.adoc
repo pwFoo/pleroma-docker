@@ -157,7 +157,7 @@ currently not supported.
 === Webserver/Database Options
 
 pleroma-docker supports Traefik, Apache, Nginx and a "manual mode". +
-You can switch be tween those modes using the variables below.
+You can switch between those modes using the variables below.
 
 ==== Database (`SCRIPT_DEPLOY_POSTGRES`)
 
