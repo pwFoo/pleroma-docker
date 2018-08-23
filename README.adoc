@@ -180,7 +180,7 @@ multiple options here.
 
 In traefik-mode we will generate a pleroma container with traefik
 labels. These will be picked up at runtime to dynamically create a
-reverse-proxy configuration. This should `just work' if `watch=true` and
+reverse-proxy configuration. This should "just work" if `watch=true` and
 `exposedByDefault=false` are set in the `[docker]` section of your
 `traefik.conf`. SSL will also `just work' once you add a matching
 `[[acme.domains]]` entry.
