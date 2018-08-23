@@ -56,7 +56,6 @@ Always take a look at `./pleroma help`.
 
 If you don't fully know how to use https://www.docker.com/[docker] or https://github.com/docker/compose[docker-compose] yet that shouldn't be 
 a huge issue - but you should still bookmark their https://docs.docker.com/[official docs] in case you get lost.
-
 Remember that you can always run `./pleroma dump` to view the generated docker-compose config, and `DEBUG=1 ./pleroma [command]` to view commands as they are executed.
 
 [discrete]
