@@ -143,7 +143,7 @@ debugging.
 If you just want to take a look at the running elixir processes, run `:observer.start.`
 
 Protip: If you don't want that this script tampers with your `xhost`, or if you use wayland,
-you can simply export `NO_X_FORWARDING=1` to disable X. This limits you do "static" debugging 
+you can simply export `NO_X_FORWARDING=1` to disable X. This limits you to "static" debugging 
 (`IO.inspect/2` / `IEx.pry/0` / `IEx.break!/2` / ...), but it will "work".
 
 === Data Storage
