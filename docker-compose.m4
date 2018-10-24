@@ -7,7 +7,7 @@ define(<env_inline>, <${upcase($1):?upcase($1)}>)
 define(<env_inline_fb>, <${upcase($1):-$2}>)
 
 {
-  "version": "3",
+  "version": "3.7",
 
   ifdef(<__DOCKER_NETWORK>, <
     "networks": {
@@ -82,6 +82,7 @@ define(<env_inline_fb>, <${upcase($1):-$2}>)
     >)
 
     "server": {
+      "init": true,
       "build": {
         "context": ".",
         "args": [
